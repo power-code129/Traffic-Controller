@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Traffic Controller — Priyanka Gandhi A</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --surface2: #1a1a1a;
+      --border: #222;
+      --red: #ff3333;
+      --yellow: #ffcc00;
+      --green: #00e676;
+      --text: #f0f0f0;
+      --muted: #888;
+      --accent: #00e676;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 4vw;
+      background: rgba(10,10,10,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .nav-links { display: flex; gap: 1.8rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    @media (max-width: 600px) {
+      .nav-links { gap: 0.9rem; }
+      .nav-links a { font-size: 0.65rem; }
+    }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 4vw 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,230,118,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,230,118,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      animation: gridMove 20s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes gridMove {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(60px); }
+    }
+    .traffic-pole {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .traffic-pole.left { left: 4vw; top: 50%; transform: translateY(-50%); }
+    .traffic-pole.right { right: 4vw; top: 50%; transform: translateY(-50%); }
+    @media (max-width: 768px) { .traffic-pole { display: none; } }
+    .pole-box {
+      width: 52px;
+      background: #1c1c1c;
+      border: 2px solid #333;
+      border-radius: 10px;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .pole-light {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      margin: 0 auto;
+      border: 2px solid #333;
+      transition: box-shadow 0.4s, background 0.4s;
+    }
+    .pole-light.red    { background: #3d0000; }
+    .pole-light.yellow { background: #3d3000; }
+    .pole-light.green  { background: #003d18; }
+    .pole-light.red.on    { background: var(--red);    box-shadow: 0 0 18px var(--red); }
+    .pole-light.yellow.on { background: var(--yellow); box-shadow: 0 0 18px var(--yellow); }
+    .pole-light.green.on  { background: var(--green);  box-shadow: 0 0 18px var(--green); }
+    .pole-stem { width: 6px; height: 60px; background: #2a2a2a; border-radius: 3px; }
+
+    .hero-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border: 1px solid var(--accent);
+      padding: 0.3rem 0.9rem;
+      border-radius: 2px;
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.2s both;
+    }
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.5rem, 11vw, 9rem);
+      line-height: 0.9;
+      letter-spacing: 0.03em;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.4s both;
+    }
+    .hero-title span { color: var(--accent); }
+    .hero-subtitle {
+      font-size: clamp(0.95rem, 2.5vw, 1.2rem);
+      color: var(--muted);
+      max-width: 540px;
+      margin-top: 1.2rem;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.6s both;
+    }
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-top: 2.2rem;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.8s both;
+    }
+    .chip {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .chip.hi { border-color: var(--accent); color: var(--accent); background: rgba(0,230,118,0.05); }
+    .hero-cta {
+      display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+      margin-top: 2.2rem;
+      position: relative; z-index: 1;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 1s both;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.72rem 1.8rem; border-radius: 4px;
+      font-size: 0.84rem; font-weight: 600;
+      text-decoration: none; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.03em; border: none;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary { background: var(--accent); color: #000; box-shadow: 0 0 20px rgba(0,230,118,0.2); }
+    .btn-primary:hover { box-shadow: 0 0 30px rgba(0,230,118,0.4); }
+    .btn-ghost { border: 1px solid var(--border); color: var(--text); background: transparent; }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* SECTIONS */
+    section { padding: 5.5rem 4vw; max-width: 1100px; margin: 0 auto; }
+    .sec-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .sec-label::before { content: ''; display: block; width: 20px; height: 1px; background: var(--accent); }
+    .sec-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      letter-spacing: 0.04em;
+      margin-bottom: 2.2rem;
+    }
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); max-width: 1100px; margin: 0 auto; }
+
+    /* ABOUT GRID */
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @media (max-width: 700px) { .about-grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.8rem;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .card:hover { border-color: var(--accent); transform: translateY(-4px); }
+    .card h3 {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.9rem;
+    }
+    .card p { color: var(--muted); font-size: 0.9rem; }
+    code {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.78rem;
+      background: rgba(0,230,118,0.08);
+      color: var(--accent);
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
+
+    /* TOOLS */
+    .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+    .tool-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.2rem 1.4rem;
+      display: flex; align-items: center; gap: 0.9rem;
+      transition: border-color 0.3s;
+    }
+    .tool-item:hover { border-color: var(--yellow); }
+    .tool-icon { font-size: 1.3rem; }
+    .tool-name { font-family: 'Space Mono', monospace; font-size: 0.78rem; }
+
+    /* FSM */
+    .fsm-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2.5rem;
+      overflow-x: auto;
+    }
+    .fsm-flow {
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: nowrap; gap: 0; min-width: 620px;
+    }
+    .fsm-node { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; flex-shrink: 0; }
+    .fsm-circle {
+      width: 66px; height: 66px; border-radius: 50%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem; font-weight: 700;
+      border: 2px solid; cursor: default;
+      transition: box-shadow 0.3s;
+    }
+    .fsm-circle:hover { box-shadow: 0 0 20px currentColor; }
+    .gs { background: rgba(0,230,118,0.1); border-color: var(--green); color: var(--green); }
+    .ys { background: rgba(255,204,0,0.1); border-color: var(--yellow); color: var(--yellow); }
+    .rs { background: rgba(255,51,51,0.1); border-color: var(--red); color: var(--red); }
+    .bs { background: rgba(255,204,0,0.05); border-color: var(--yellow); color: var(--yellow); animation: blink 1s ease infinite; }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+    .fsm-lbl { font-size: 0.62rem; color: var(--muted); font-family: 'Space Mono', monospace; text-align: center; }
+    .fsm-arr { font-size: 1.1rem; color: #444; padding: 0 0.4rem; margin-bottom: 1.4rem; flex-shrink: 0; }
+    .night-note {
+      margin-top: 1.5rem;
+      background: rgba(255,204,0,0.05);
+      border: 1px dashed rgba(255,204,0,0.3);
+      border-radius: 6px;
+      padding: 0.8rem 1.2rem;
+      font-size: 0.82rem;
+      color: var(--yellow);
+    }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; margin-top: 2rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+    thead tr { background: rgba(0,230,118,0.07); border-bottom: 1px solid var(--border); }
+    th {
+      font-family: 'Space Mono', monospace; font-size: 0.65rem;
+      color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.85rem 1.1rem; text-align: left;
+    }
+    td { padding: 0.8rem 1.1rem; border-bottom: 1px solid var(--border); color: var(--muted); }
+    tr:hover td { background: rgba(255,255,255,0.02); color: var(--text); }
+    .badge {
+      display: inline-block;
+      padding: 0.18rem 0.55rem;
+      border-radius: 3px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+    }
+    .bg { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
+    .br { background: rgba(255,51,51,0.1); color: var(--red); border: 1px solid rgba(255,51,51,0.2); }
+    .by { background: rgba(255,204,0,0.1); color: var(--yellow); border: 1px solid rgba(255,204,0,0.2); }
+    .bb { background: rgba(100,180,255,0.1); color: #64b4ff; border: 1px solid rgba(100,180,255,0.2); }
+
+    /* ALGORITHM */
+    .algo-steps { display: flex; flex-direction: column; gap: 1.1rem; }
+    .algo-step {
+      display: flex; gap: 1.4rem; align-items: flex-start;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1.4rem;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .algo-step:hover { border-color: var(--accent); transform: translateX(6px); }
+    .step-n { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--accent); opacity: 0.35; line-height: 1; min-width: 2.2rem; }
+    .step-c h4 { font-family: 'Space Mono', monospace; font-size: 0.78rem; color: var(--text); margin-bottom: 0.35rem; }
+    .step-c p { color: var(--muted); font-size: 0.88rem; }
+
+    /* CODE */
+    .code-tabs { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; }
+    .ctab {
+      font-family: 'Space Mono', monospace; font-size: 0.7rem;
+      padding: 0.7rem 1.4rem; color: var(--muted); cursor: pointer;
+      border-bottom: 2px solid transparent; white-space: nowrap;
+      transition: color 0.2s, border-color 0.2s;
+      background: none; border-top: none; border-left: none; border-right: none;
+    }
+    .ctab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .ctab:hover:not(.active) { color: var(--text); }
+    .cblock {
+      background: var(--surface); border: 1px solid var(--border);
+      border-top: none; border-radius: 0 0 8px 8px;
+      padding: 1.8rem; overflow-x: auto; display: none;
+    }
+    .cblock.active { display: block; }
+    .cblock pre {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem; line-height: 1.8;
+      color: #c9d1d9; white-space: pre;
+    }
+    .kw{color:#ff79c6;} .cm{color:#6272a4;} .st{color:#f1fa8c;}
+    .nm{color:#bd93f9;} .fn{color:#50fa7b;} .cn{color:#ffb86c;}
+
+    /* DEMO */
+    .demo-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 2.5rem; text-align: center;
+    }
+    .demo-info {
+      display: flex; flex-wrap: wrap; gap: 1.5rem;
+      justify-content: center; align-items: center; margin-bottom: 1.8rem;
+    }
+    .demo-state-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.2rem; }
+    .demo-state-val { font-family: 'Space Mono', monospace; font-size: 0.9rem; color: var(--accent); }
+    .tbar-wrap { width: 180px; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; margin: 0.3rem auto 0.2rem; }
+    .tbar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.08s linear; }
+    .timer-txt { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--muted); }
+
+    /* Intersection */
+    .intersect {
+      display: inline-grid;
+      grid-template-columns: 90px 150px 90px;
+      grid-template-rows: 90px 150px 90px;
+      background: #131a13;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .road-h, .road-v { background: #252525; display: flex; align-items: center; justify-content: center; }
+    .road-c { background: #252525; position: relative; }
+    .road-c::before { content:''; position:absolute; width:2px; top:0; bottom:0; left:50%; background:rgba(255,255,255,0.08); }
+    .road-c::after  { content:''; position:absolute; height:2px; left:0; right:0; top:50%; background:rgba(255,255,255,0.08); }
+    .corner { background: #0f0f0f; }
+    .sig-box {
+      background: #0d0d0d; border: 2px solid #1e1e1e; border-radius: 6px;
+      padding: 5px 4px; display: flex; flex-direction: column; gap: 4px; align-items: center;
+    }
+    .sl { width: 16px; height: 16px; border-radius: 50%; transition: background 0.3s, box-shadow 0.3s; }
+    .sl.off { background: #1a1a1a; }
+    .sl.lr { background: var(--red);    box-shadow: 0 0 10px var(--red); }
+    .sl.ly { background: var(--yellow); box-shadow: 0 0 10px var(--yellow); }
+    .sl.lg { background: var(--green);  box-shadow: 0 0 10px var(--green); }
+
+    .ped-ind { font-family: 'Space Mono', monospace; font-size: 0.63rem; color: var(--muted); margin: 0.4rem 0 1.2rem; }
+    .ped-ind .walk { color: var(--green); }
+    .ped-ind .wait { color: var(--red); }
+
+    .demo-controls { display: flex; gap: 0.7rem; flex-wrap: wrap; justify-content: center; }
+    .demo-btn {
+      font-family: 'Space Mono', monospace; font-size: 0.68rem;
+      padding: 0.5rem 1rem; border-radius: 4px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--muted); cursor: pointer;
+      transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .demo-btn.nm-on { border-color: var(--yellow); color: var(--yellow); background: rgba(255,204,0,0.06); }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 3rem 4vw;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    .gh-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      margin-top: 1.2rem; padding: 0.68rem 1.5rem;
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text); text-decoration: none; font-size: 0.84rem;
+      transition: border-color 0.2s, color 0.2s, transform 0.2s;
+    }
+    .gh-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+    .star-note { margin-top: 0.8rem; font-size: 0.75rem; color: var(--yellow); }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">⬡ Priyanka Gandhi A</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#theory">Theory</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#code">Code</a></li>
+    <li><a href="https://github.com/power-code129/Traffic-Controller" target="_blank">GitHub ↗</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grid-bg"></div>
+
+  <div class="traffic-pole left">
+    <div class="pole-box">
+      <div class="pole-light red on" id="hLR"></div>
+      <div class="pole-light yellow" id="hLY"></div>
+      <div class="pole-light green" id="hLG"></div>
+    </div>
+    <div class="pole-stem"></div>
+  </div>
+  <div class="traffic-pole right">
+    <div class="pole-box">
+      <div class="pole-light red" id="hRR"></div>
+      <div class="pole-light yellow" id="hRY"></div>
+      <div class="pole-light green on" id="hRG"></div>
+    </div>
+    <div class="pole-stem"></div>
+  </div>
+
+  <div class="hero-tag">Independent Project · ECE · Verilog HDL</div>
+  <h1 class="hero-title">TRAFFIC<br/><span>CONTROLLER</span></h1>
+  <p class="hero-subtitle">A finite state machine-based traffic light controller for NS &amp; EW intersections with pedestrian signals and night mode — implemented in Verilog HDL.</p>
+  <div class="hero-meta">
+    <span class="chip hi">Verilog HDL</span>
+    <span class="chip">Icarus Verilog</span>
+    <span class="chip">GTKWave</span>
+    <span class="chip">FSM Design</span>
+    <span class="chip">April 20, 2025</span>
+  </div>
+  <div class="hero-cta">
+    <a href="https://github.com/power-code129/Traffic-Controller" target="_blank" class="btn btn-primary">⭐ Star on GitHub</a>
+    <a href="#demo" class="btn btn-ghost">Live Simulation ↓</a>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="sec-label">Project Overview</div>
+  <div class="sec-title">WHAT IS THIS?</div>
+  <div class="about-grid">
+    <div class="card">
+      <h3>🎯 Objective</h3>
+      <p>Design and implement a Traffic Light Controller using Verilog HDL handling vehicle and pedestrian signals for North-South (NS) and East-West (EW) directions, including night mode and vehicle sensor input to optimize real-time traffic flow.</p>
+    </div>
+    <div class="card">
+      <h3>👩‍💻 Contributor</h3>
+      <p><strong style="color:var(--text)">Priyanka Gandhi A</strong><br/>ECE Student, Avinashilingam University<br/><br/>This is an independent project exploring digital design using hardware description language and finite state machine principles.</p>
+    </div>
+    <div class="card">
+      <h3>📡 Inputs</h3>
+      <p>
+        <code>clk</code> system clock &nbsp;·&nbsp; <code>rst</code> reset<br/>
+        <code style="color:var(--yellow);background:rgba(255,204,0,0.08)">night_mode</code> blink trigger<br/>
+        <code style="color:var(--text);background:#1a1a1a">sensor_NS</code> / <code style="color:var(--text);background:#1a1a1a">sensor_EW</code> vehicle detection<br/>
+        <code style="color:var(--text);background:#1a1a1a">ped_NS</code> / <code style="color:var(--text);background:#1a1a1a">ped_EW</code> pedestrian requests
+      </p>
+    </div>
+    <div class="card">
+      <h3>📤 Outputs</h3>
+      <p>
+        <code>light_NS[2:0]</code> — 3-bit NS traffic signal<br/>
+        <code>light_EW[2:0]</code> — 3-bit EW traffic signal<br/><br/>
+        <code style="color:var(--green);background:rgba(0,230,118,0.08)">ped_signal_NS</code> / <code style="color:var(--green);background:rgba(0,230,118,0.08)">ped_signal_EW</code><br/>Pedestrian crossing indicators
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- APPARATUS -->
+<section>
+  <div class="sec-label">Apparatus</div>
+  <div class="sec-title">TOOLS USED</div>
+  <div class="tools-grid">
+    <div class="tool-item"><span class="tool-icon">💻</span><span class="tool-name">VS Code</span></div>
+    <div class="tool-item"><span class="tool-icon">⚡</span><span class="tool-name">Icarus Verilog</span></div>
+    <div class="tool-item"><span class="tool-icon">📊</span><span class="tool-name">GTKWave</span></div>
+    <div class="tool-item"><span class="tool-icon">🖥️</span><span class="tool-name">PC</span></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- THEORY / FSM -->
+<section id="theory">
+  <div class="sec-label">Theory</div>
+  <div class="sec-title">FSM STATE MACHINE</div>
+  <div class="fsm-wrap">
+    <div class="fsm-flow">
+      <div class="fsm-node">
+        <div class="fsm-circle gs">G1<br/><span style="font-size:0.52rem">NS🟢</span></div>
+        <div class="fsm-lbl">NS Green<br/>EW Red</div>
+      </div>
+      <div class="fsm-arr">→</div>
+      <div class="fsm-node">
+        <div class="fsm-circle ys">Y1<br/><span style="font-size:0.52rem">NS🟡</span></div>
+        <div class="fsm-lbl">NS Yellow<br/>EW Red</div>
+      </div>
+      <div class="fsm-arr">→</div>
+      <div class="fsm-node">
+        <div class="fsm-circle rs">R1<br/><span style="font-size:0.52rem">All🔴</span></div>
+        <div class="fsm-lbl">Both Red</div>
+      </div>
+      <div class="fsm-arr">→</div>
+      <div class="fsm-node">
+        <div class="fsm-circle gs">G2<br/><span style="font-size:0.52rem">EW🟢</span></div>
+        <div class="fsm-lbl">EW Green<br/>NS Red</div>
+      </div>
+      <div class="fsm-arr">→</div>
+      <div class="fsm-node">
+        <div class="fsm-circle ys">Y2<br/><span style="font-size:0.52rem">EW🟡</span></div>
+        <div class="fsm-lbl">EW Yellow<br/>NS Red</div>
+      </div>
+      <div class="fsm-arr">→</div>
+      <div class="fsm-node">
+        <div class="fsm-circle rs">R2<br/><span style="font-size:0.52rem">All🔴</span></div>
+        <div class="fsm-lbl">Both Red</div>
+      </div>
+      <div class="fsm-arr" style="transform:rotate(180deg)">→</div>
+    </div>
+    <div class="night-note">⚡ <strong>Night Mode Override</strong> → BLINK state: both directions flash yellow continuously to conserve power during low-traffic hours.</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>State</th><th>NS Signal</th><th>EW Signal</th><th>Ped NS</th><th>Ped EW</th><th>Duration</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>G1</code></td><td><span class="badge bg">GREEN 100</span></td><td><span class="badge br">RED 001</span></td><td><span class="badge bb">if ped_NS</span></td><td>—</td><td>100 clk</td></tr>
+        <tr><td><code>Y1</code></td><td><span class="badge by">YELLOW 010</span></td><td><span class="badge br">RED 001</span></td><td>—</td><td>—</td><td>30 clk</td></tr>
+        <tr><td><code>R1</code></td><td><span class="badge br">RED 001</span></td><td><span class="badge br">RED 001</span></td><td>—</td><td>—</td><td>20 clk</td></tr>
+        <tr><td><code>G2</code></td><td><span class="badge br">RED 001</span></td><td><span class="badge bg">GREEN 100</span></td><td>—</td><td><span class="badge bb">if ped_EW</span></td><td>100 clk</td></tr>
+        <tr><td><code>Y2</code></td><td><span class="badge br">RED 001</span></td><td><span class="badge by">YELLOW 010</span></td><td>—</td><td>—</td><td>30 clk</td></tr>
+        <tr><td><code>R2</code></td><td><span class="badge br">RED 001</span></td><td><span class="badge br">RED 001</span></td><td>—</td><td>—</td><td>20 clk</td></tr>
+        <tr><td><code>BLINK</code></td><td><span class="badge by">YELLOW 010</span></td><td><span class="badge by">YELLOW 010</span></td><td>—</td><td>—</td><td>10 clk loop</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ALGORITHM -->
+<section id="algo">
+  <div class="sec-label">Algorithm</div>
+  <div class="sec-title">STEP-BY-STEP</div>
+  <div class="algo-steps">
+    <div class="algo-step">
+      <div class="step-n">01</div>
+      <div class="step-c"><h4>Initialization</h4><p>Start the system and initialize the control logic.</p></div>
+    </div>
+    <div class="algo-step">
+      <div class="step-n">02</div>
+      <div class="step-c"><h4>Reset Check</h4><p>If reset is active → set initial state to G1 (NS Green) and set internal timer to 0. Otherwise → proceed to clock cycle operations.</p></div>
+    </div>
+    <div class="algo-step">
+      <div class="step-n">03</div>
+      <div class="step-c"><h4>Timer Management</h4><p>On each clock cycle monitor the timer. If timer ≥ threshold for current state → transition to next_state and reset timer. Otherwise → increment timer.</p></div>
+    </div>
+    <div class="algo-step">
+      <div class="step-n">04</div>
+      <div class="step-c"><h4>Output Signals</h4><p>Set output signals per state: G1 (NS Green, ped_NS active) → Y1 → R1 → G2 (EW Green, ped_EW active) → Y2 → R2, then loop back.</p></div>
+    </div>
+    <div class="algo-step">
+      <div class="step-n">05</div>
+      <div class="step-c"><h4>Night Mode Override</h4><p>If Night Mode is active → override state and transition to BLINK. Both light_NS and light_EW set to Yellow continuously.</p></div>
+    </div>
+    <div class="algo-step">
+      <div class="step-n">06</div>
+      <div class="step-c"><h4>Continuous Loop</h4><p>Repeat all steps on every clock pulse to maintain real-time traffic control.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- LIVE DEMO -->
+<section id="demo">
+  <div class="sec-label">Interactive</div>
+  <div class="sec-title">LIVE SIMULATION</div>
+  <div class="demo-box">
+    <div class="demo-info">
+      <div>
+        <div class="demo-state-label">Current State</div>
+        <div class="demo-state-val" id="dState">G1 — NS Green</div>
+      </div>
+      <div>
+        <div class="demo-state-label">Timer Progress</div>
+        <div class="tbar-wrap"><div class="tbar" id="tBar" style="width:0%"></div></div>
+        <div class="timer-txt" id="tTxt">0 / 100</div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:center">
+      <div class="intersect">
+        <!-- row 1 -->
+        <div class="corner"></div>
+        <div class="road-v">
+          <div class="sig-box">
+            <div class="sl lr" id="nTR"></div>
+            <div class="sl off" id="nTY"></div>
+            <div class="sl off" id="nTG"></div>
+          </div>
+        </div>
+        <div class="corner"></div>
+        <!-- row 2 -->
+        <div class="road-h">
+          <div class="sig-box" style="flex-direction:row;gap:4px">
+            <div class="sl off" id="eLR" style="width:13px;height:13px"></div>
+            <div class="sl off" id="eLY" style="width:13px;height:13px"></div>
+            <div class="sl lg" id="eLG" style="width:13px;height:13px"></div>
+          </div>
+        </div>
+        <div class="road-c"></div>
+        <div class="road-h">
+          <div class="sig-box" style="flex-direction:row;gap:4px">
+            <div class="sl off" id="eRR" style="width:13px;height:13px"></div>
+            <div class="sl off" id="eRY" style="width:13px;height:13px"></div>
+            <div class="sl lg" id="eRG" style="width:13px;height:13px"></div>
+          </div>
+        </div>
+        <!-- row 3 -->
+        <div class="corner"></div>
+        <div class="road-v">
+          <div class="sig-box">
+            <div class="sl lr" id="nBR"></div>
+            <div class="sl off" id="nBY"></div>
+            <div class="sl off" id="nBG"></div>
+          </div>
+        </div>
+        <div class="corner"></div>
+      </div>
+    </div>
+
+    <div class="ped-ind">
+      🚶 NS: <span class="wait" id="pNS">WAIT</span> &nbsp;|&nbsp; 🚶 EW: <span class="wait" id="pEW">WAIT</span>
+    </div>
+
+    <div class="demo-controls">
+      <button class="demo-btn" id="pauseBtn" onclick="dToggle()">⏸ Pause</button>
+      <button class="demo-btn" id="nightBtn" onclick="dNight()">🌙 Night Mode</button>
+      <button class="demo-btn" onclick="dPedNS()">🚶 Ped NS</button>
+      <button class="demo-btn" onclick="dPedEW()">🚶 Ped EW</button>
+      <button class="demo-btn" onclick="dReset()">↺ Reset</button>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CODE -->
+<section id="code">
+  <div class="sec-label">Source Code</div>
+  <div class="sec-title">VERILOG HDL</div>
+  <div class="code-tabs">
+    <button class="ctab active" id="t1" onclick="showCode('ctrl',this)">traffic_light_controller.v</button>
+    <button class="ctab" id="t2" onclick="showCode('tb',this)">tb_traffic_light.v</button>
+  </div>
+  <div class="cblock active" id="cb-ctrl">
+<pre><span class="kw">module</span> <span class="fn">traffic_light_controller</span>(
+  <span class="kw">input wire</span>       clk, rst, night_mode,
+  <span class="kw">input wire</span>       sensor_NS, sensor_EW,
+  <span class="kw">input wire</span>       ped_NS, ped_EW,
+  <span class="kw">output reg</span> [2:0] light_NS, light_EW,
+  <span class="kw">output reg</span>       ped_signal_NS, ped_signal_EW
+);
+
+<span class="cm">// State encoding</span>
+<span class="kw">parameter</span> <span class="cn">G1</span>=3'd0, <span class="cn">Y1</span>=3'd1, <span class="cn">R1</span>=3'd2,
+          <span class="cn">G2</span>=3'd3, <span class="cn">Y2</span>=3'd4, <span class="cn">R2</span>=3'd5, <span class="cn">BLINK</span>=3'd6;
+
+<span class="kw">reg</span> [2:0] state, next_state;
+<span class="kw">reg</span> [7:0] timer;
+
+<span class="cm">// Timing parameters</span>
+<span class="kw">parameter</span> <span class="cn">GREEN_TIME</span>=8'd100, <span class="cn">YELLOW_TIME</span>=8'd30;
+<span class="kw">parameter</span> <span class="cn">RED_TIME</span>=8'd20,   <span class="cn">BLINK_TIME</span>=8'd10;
+
+<span class="cm">// Clocked state machine</span>
+<span class="kw">always</span> @(<span class="kw">posedge</span> clk <span class="kw">or posedge</span> rst) <span class="kw">begin</span>
+  <span class="kw">if</span> (rst) <span class="kw">begin</span>
+    state &lt;= <span class="cn">G1</span>; timer &lt;= 0;
+  <span class="kw">end else begin</span>
+    <span class="kw">if</span> (timer >= (night_mode ? <span class="cn">BLINK_TIME</span> :
+        (state==<span class="cn">G1</span>&&sensor_NS)||(state==<span class="cn">G2</span>&&sensor_EW) ? <span class="cn">GREEN_TIME</span> :
+        (state==<span class="cn">Y1</span>||state==<span class="cn">Y2</span>) ? <span class="cn">YELLOW_TIME</span> : <span class="cn">RED_TIME</span>)) <span class="kw">begin</span>
+      state &lt;= next_state; timer &lt;= 0;
+    <span class="kw">end else</span>
+      timer &lt;= timer + 1;
+  <span class="kw">end</span>
+<span class="kw">end</span>
+
+<span class="cm">// Combinational output logic</span>
+<span class="kw">always</span> @(*) <span class="kw">begin</span>
+  light_NS=3'b001; light_EW=3'b001;
+  ped_signal_NS=0; ped_signal_EW=0;
+  next_state=state;
+
+  <span class="kw">case</span> (state)
+    <span class="cn">G1</span>: <span class="kw">begin</span>
+      light_NS=3'b100; light_EW=3'b001; <span class="cm">// Green NS</span>
+      <span class="kw">if</span>(ped_NS) ped_signal_NS=1;
+      next_state=<span class="cn">Y1</span>;
+    <span class="kw">end</span>
+    <span class="cn">Y1</span>: <span class="kw">begin</span> light_NS=3'b010; next_state=<span class="cn">R1</span>; <span class="kw">end</span>
+    <span class="cn">R1</span>: next_state=<span class="cn">G2</span>;
+    <span class="cn">G2</span>: <span class="kw">begin</span>
+      light_EW=3'b100; <span class="cm">// Green EW</span>
+      <span class="kw">if</span>(ped_EW) ped_signal_EW=1;
+      next_state=<span class="cn">Y2</span>;
+    <span class="kw">end</span>
+    <span class="cn">Y2</span>: <span class="kw">begin</span> light_EW=3'b010; next_state=<span class="cn">R2</span>; <span class="kw">end</span>
+    <span class="cn">R2</span>: next_state=<span class="cn">G1</span>;
+    <span class="cn">BLINK</span>: <span class="kw">begin</span>
+      light_NS=3'b010; light_EW=3'b010; <span class="cm">// Both Yellow</span>
+      next_state=<span class="cn">BLINK</span>;
+    <span class="kw">end</span>
+    <span class="kw">default</span>: next_state=<span class="cn">G1</span>;
+  <span class="kw">endcase</span>
+
+  <span class="kw">if</span>(night_mode) next_state=<span class="cn">BLINK</span>;
+<span class="kw">end</span>
+
+<span class="kw">endmodule</span></pre>
+  </div>
+  <div class="cblock" id="cb-tb">
+<pre><span class="cn">`timescale</span> 1ns / 1ps
+
+<span class="kw">module</span> <span class="fn">tb_traffic_light</span>;
+
+<span class="kw">reg</span>  clk, rst, sensor_NS, sensor_EW;
+<span class="kw">reg</span>  ped_NS, ped_EW, night_mode;
+<span class="kw">wire</span> [2:0] light_NS, light_EW;
+<span class="kw">wire</span> ped_signal_NS, ped_signal_EW;
+
+<span class="fn">traffic_light_controller</span> uut (
+  .clk(clk), .rst(rst),
+  .sensor_NS(sensor_NS), .sensor_EW(sensor_EW),
+  .ped_NS(ped_NS), .ped_EW(ped_EW),
+  .night_mode(night_mode),
+  .light_NS(light_NS), .light_EW(light_EW),
+  .ped_signal_NS(ped_signal_NS),
+  .ped_signal_EW(ped_signal_EW)
+);
+
+<span class="cm">// 100 MHz clock</span>
+<span class="kw">always</span> #5 clk = ~clk;
+
+<span class="kw">initial begin</span>
+  $dumpfile(<span class="st">"traffic_wave.vcd"</span>);
+  $dumpvars(0, tb_traffic_light);
+
+  clk=0; rst=1;
+  sensor_NS=0; sensor_EW=0;
+  ped_NS=0; ped_EW=0; night_mode=0;
+
+  #20  rst=0;
+
+  <span class="cm">// Day simulation</span>
+  #50  sensor_EW=1; #100 sensor_EW=0;
+  #50  ped_NS=1;    #100 ped_NS=0;
+  #50  ped_EW=1;    #100 ped_EW=0;
+
+  <span class="cm">// Night mode test</span>
+  #200  night_mode=1;
+  #1000 night_mode=0;
+  #500  $finish;
+<span class="kw">end</span>
+
+<span class="kw">endmodule</span></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<footer>
+  <div style="font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);margin-bottom:0.5rem">TRAFFIC CONTROLLER PROJECT</div>
+  <p>Built by <strong style="color:var(--text)">Priyanka Gandhi A</strong> · ECE, Avinashilingam University · April 20, 2025</p>
+  <p style="margin-top:0.4rem">Implemented in <span style="color:var(--accent)">Verilog HDL</span> using Icarus Verilog &amp; GTKWave</p>
+  <a href="https://github.com/power-code129/Traffic-Controller" target="_blank" class="gh-btn">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+    View on GitHub
+  </a>
+  <div class="star-note">⭐ If you found this useful, please star the repo!</div>
+</footer>
+
+<script>
+// Hero light animation
+const heroSeq = [
+  {l:['on','',''],  r:['','','on']},
+  {l:['','on',''], r:['','on','']},
+  {l:['','','on'],  r:['on','','']},
+  {l:['','on',''], r:['','on','']},
+];
+let hi=0;
+const hL=[document.getElementById('hLR'),document.getElementById('hLY'),document.getElementById('hLG')];
+const hR=[document.getElementById('hRR'),document.getElementById('hRY'),document.getElementById('hRG')];
+const colors=['red','yellow','green'];
+function cycleHero(){
+  const s=heroSeq[hi%heroSeq.length];
+  colors.forEach((c,i)=>{
+    hL[i].className=`pole-light ${c}${s.l[i]==='on'?' on':''}`;
+    hR[i].className=`pole-light ${c}${s.r[i]==='on'?' on':''}`;
+  });
+  hi++;
+}
+setInterval(cycleHero,1800);
+
+// Code tabs
+function showCode(id,btn){
+  document.querySelectorAll('.ctab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.cblock').forEach(b=>b.classList.remove('active'));
+  document.getElementById('cb-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// Demo simulation
+const ST=[
+  {n:'G1 — NS Green',  ns:'g',ew:'r',dur:100},
+  {n:'Y1 — NS Yellow', ns:'y',ew:'r',dur:30},
+  {n:'R1 — All Red',   ns:'r',ew:'r',dur:20},
+  {n:'G2 — EW Green',  ns:'r',ew:'g',dur:100},
+  {n:'Y2 — EW Yellow', ns:'r',ew:'y',dur:30},
+  {n:'R2 — All Red',   ns:'r',ew:'r',dur:20},
+];
+let si=0,tm=0,paused=false,night=false,blinkOn=true,pedNS=false,pedEW=false;
+
+function applySignal(ns,ew){
+  const setEl=(id,cls)=>{const e=document.getElementById(id);if(e)e.className='sl '+cls;};
+  const nsR=ns==='r', nsY=ns==='y', nsG=ns==='g';
+  const ewR=ew==='r', ewY=ew==='y', ewG=ew==='g';
+  setEl('nTR',nsR?'lr':'off'); setEl('nTY',nsY?'ly':'off'); setEl('nTG',nsG?'lg':'off');
+  setEl('nBR',nsR?'lr':'off'); setEl('nBY',nsY?'ly':'off'); setEl('nBG',nsG?'lg':'off');
+  setEl('eLR',ewR?'lr':'off'); setEl('eLY',ewY?'ly':'off'); setEl('eLG',ewG?'lg':'off');
+  setEl('eRR',ewR?'lr':'off'); setEl('eRY',ewY?'ly':'off'); setEl('eRG',ewG?'lg':'off');
+}
+
+function dStep(){
+  if(paused)return;
+  const s=night?{n:'🌙 BLINK — Night Mode',ns:'y',ew:'y',dur:15}:ST[si];
+  tm++;
+  if(night){blinkOn=Math.floor(tm/8)%2===0;}
+  const p=(tm/s.dur)*100;
+  document.getElementById('tBar').style.width=Math.min(p,100)+'%';
+  document.getElementById('tTxt').textContent=tm+' / '+s.dur;
+  document.getElementById('dState').textContent=s.n;
+
+  if(night&&!blinkOn){applySignal('r','r');}
+  else{applySignal(s.ns,s.ew);}
+
+  const sNS=!night&&si===0&&pedNS;
+  const sEW=!night&&si===3&&pedEW;
+  const pn=document.getElementById('pNS'),pe=document.getElementById('pEW');
+  pn.textContent=sNS?'WALK':'WAIT'; pn.className=sNS?'walk':'wait';
+  pe.textContent=sEW?'WALK':'WAIT'; pe.className=sEW?'walk':'wait';
+
+  if(tm>=s.dur){tm=0;if(!night){si=(si+1)%ST.length;pedNS=false;pedEW=false;}}
+}
+setInterval(dStep,65);
+
+function dToggle(){paused=!paused;document.getElementById('pauseBtn').textContent=paused?'▶ Resume':'⏸ Pause';}
+function dNight(){night=!night;tm=0;const b=document.getElementById('nightBtn');b.classList.toggle('nm-on',night);b.textContent=night?'☀️ Day Mode':'🌙 Night Mode';}
+function dPedNS(){pedNS=true;}
+function dPedEW(){pedEW=true;}
+function dReset(){si=0;tm=0;night=false;pedNS=false;pedEW=false;document.getElementById('nightBtn').classList.remove('nm-on');document.getElementById('nightBtn').textContent='🌙 Night Mode';document.getElementById('pauseBtn').textContent='⏸ Pause';paused=false;}
+</script>
+</body>
+</html>
