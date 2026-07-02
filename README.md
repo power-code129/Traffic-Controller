@@ -36,4 +36,4 @@ The Traffic Light Controller is designed as a finite state machine (FSM) impleme
            End of procedure
 
 ## CONTRIBUTORS: 
-@powercode-129 @medusatrive-creater
+Priyanka Gandhi A & Monica Gandhi A
