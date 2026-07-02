@@ -34,3 +34,6 @@ The Traffic Light Controller is designed as a finite state machine (FSM) impleme
            Continuously repeat the above steps on every clock pulse to maintain real-time  traffic control. 
 ### Step:7: 
            End of procedure
+
+## CONTRIBUTORS: 
+@powercode-129 @medusatrive-creater
