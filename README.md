@@ -36,5 +36,7 @@ The Traffic Light Controller is designed as a finite state machine (FSM) impleme
            End of procedure
 
 ## CONTRIBUTORS: 
-Priyanka Gandhi A - ECE Graduate 2026
-Monica Gandhi A - ECE Graduate 2027
+1. Priyanka Gandhi A - ECE Graduate 2026
+2. Monica Gandhi A - ECE Graduate 2027
+
+   Collaborators
